@@ -1,11 +1,34 @@
-<div align="center">
+# Android AI Chatbot with RAG
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+A powerful native Android application integrating Gemini AI for real-time chat and RAG (Retrieval-Augmented Generation) with PDF support.
 
-  <h1>Built with AI Studio</h2>
+## 🚀 Features
+- **AI Chatbot**: Real-time text generation using Google's Gemini API.
+- **RAG Implementation**: Upload PDFs and query their content using AI.
+- **Chat History**: Persistent storage of conversations using Room database.
+- **Modern UI**: Built entirely with Jetpack Compose following Material 3 guidelines.
+- **Clean Architecture**: Organized into Data, Domain, and Presentation layers for maintainability.
+- **MVVM + Flow**: Reactive programming model with Kotlin Flow and ViewModels.
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## 🛠️ Built With
+- **Kotlin**: Primary language.
+- **Jetpack Compose**: Modern UI toolkit.
+- **Room**: SQLite-based persistence.
+- **Gemini Android SDK**: AI model integration.
+- **PDFBox Android**: Text extraction from PDF files.
+- **Coroutines & Flow**: Asynchronous programming.
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+## 🏗️ Architecture
+The project follows **Clean Architecture** principles:
+- **Domain Layer**: Contains business logic, UseCases, and Domain entities.
+- **Data Layer**: Repositories, Database (Room), and API clients (Gemini).
+- **Presentation Layer**: UI Components, Screens, and ViewModels.
 
-</div>
+## 📝 Setup
+1. Clone the repository.
+2. Get a Gemini API Key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+3. Add your API key to `local.properties` or set it in the `GeminiClient` class.
+4. Build and run the app in Android Studio.
+
+## 📄 License
+This project is licensed under the Apache 2.0 License.

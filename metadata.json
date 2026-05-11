@@ -1,0 +1,6 @@
+{
+  "name": "Android AI Chat & RAG",
+  "description": "A native Android application built with Kotlin, Jetpack Compose, and Room DB, featuring an AI chatbot with RAG capabilities for PDF querying using the Gemini API.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

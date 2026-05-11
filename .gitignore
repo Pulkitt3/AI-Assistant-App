@@ -1,0 +1,12 @@
+# Android build artifacts
+/build
+/app/build
+*.iml
+.gradle
+local.properties
+.idea
+
+# Node.js
+node_modules
+dist
+.env
