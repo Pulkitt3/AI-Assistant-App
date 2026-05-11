@@ -30,5 +30,12 @@ The project follows **Clean Architecture** principles:
 3. Add your API key to `local.properties` or set it in the `GeminiClient` class.
 4. Build and run the app in Android Studio.
 
+## 🔐 Security
+- **Encryption**: Chat messages are stored in a SQLite database. For production, consider using **SQLCipher** to encrypt the database file.
+- **Secure Storage**: Sensitive information like API keys is managed via `EncryptedSharedPreferences` through the `SecurityManager`.
+- **SSL Pinning**: For custom backend integrations, use `OkHttp` with `CertificatePinner`. Google's Gemini SDK handles secure communication internally with Google services.
+- **Memory Safety**: Use `viewModelScope` and `collectAsStateWithLifecycle` to prevent memory leaks and ensure UI updates are tied to the lifecycle.
+- **ANR Prevention**: All heavy operations (PDF parsing, Database I/O, Network calls) are explicitly moved to `Dispatchers.IO`.
+
 ## 📄 License
 This project is licensed under the Apache 2.0 License.

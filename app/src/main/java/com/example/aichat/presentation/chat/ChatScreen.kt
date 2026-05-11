@@ -11,10 +11,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.example.aichat.domain.model.ChatMessage
-import com.example.aichat.domain.model.MessageSender
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.animation.*
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,16 +23,24 @@ fun ChatScreen(
     viewModel: ChatViewModel,
     onUploadClick: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var inputText by remember { mutableStateOf("") }
 
     Scaffold(
+        modifier = Modifier.imePadding(),
         topBar = {
             TopAppBar(
-                title = { Text("AI Chat & RAG") },
+                title = { 
+                    Column {
+                        Text("AI Chat & RAG", style = MaterialTheme.typography.titleMedium)
+                        if (uiState.isLoading) {
+                            Text("AI is thinking...", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                },
                 actions = {
-                    Button(onClick = onUploadClick) {
-                        Text("Upload PDF")
+                    TextButton(onClick = onUploadClick) {
+                        Text("PDF")
                     }
                 }
             )
@@ -41,43 +50,65 @@ fun ChatScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
+                .navigationBarsPadding()
         ) {
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(8.dp),
-                reverseLayout = false
+                    .padding(horizontal = 12.dp),
+                reverseLayout = false,
+                contentPadding = PaddingValues(top = 8.dp, bottom = 8.dp)
             ) {
-                items(uiState.messages) { message ->
-                    ChatBubble(message)
-                }
-                if (uiState.isLoading) {
-                    item {
-                        CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                items(
+                    items = uiState.messages,
+                    key = { it.id }
+                ) { message ->
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = fadeIn() + expandVertically()
+                    ) {
+                        ChatBubble(message)
                     }
                 }
+            }
+
+            if (uiState.error != null) {
+                Text(
+                    text = uiState.error!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(8.dp),
+                    style = MaterialTheme.typography.labelSmall
+                )
             }
 
             Row(
                 modifier = Modifier
                     .padding(8.dp)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
                     value = inputText,
                     onValueChange = { inputText = it },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("Type a message...") }
+                    placeholder = { Text("Type a message...") },
+                    shape = RoundedCornerShape(24.dp),
+                    maxLines = 4
                 )
-                IconButton(
+                Spacer(modifier = Modifier.width(8.dp))
+                FloatingActionButton(
                     onClick = {
                         viewModel.sendMessage(inputText)
                         inputText = ""
                     },
-                    enabled = !uiState.isLoading && inputText.isNotBlank()
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(50),
+                    modifier = Modifier.size(48.dp),
+                    elevation = FloatingActionButtonDefaults.elevation(0.dp)
                 ) {
-                    Icon(Icons.Default.Send, contentDescription = "Send")
+                    Icon(Icons.Default.Send, contentDescription = "Send", modifier = Modifier.size(20.dp))
                 }
             }
         }
@@ -86,27 +117,31 @@ fun ChatScreen(
 
 @Composable
 fun ChatBubble(message: ChatMessage) {
-    val alignment = if (message.sender == MessageSender.USER) Alignment.CenterEnd else Alignment.CenterStart
-    val color = if (message.sender == MessageSender.USER) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer
-    val shape = if (message.sender == MessageSender.USER) 
-        RoundedCornerShape(16.dp, 16.dp, 0.dp, 16.dp) 
+    val isUser = message.sender == MessageSender.USER
+    val alignment = if (isUser) Alignment.CenterEnd else Alignment.CenterStart
+    val containerColor = if (isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val contentColor = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    
+    val shape = if (isUser) 
+        RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp) 
     else 
-        RoundedCornerShape(16.dp, 16.dp, 16.dp, 0.dp)
+        RoundedCornerShape(20.dp, 20.dp, 20.dp, 4.dp)
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        contentAlignment = alignment
+            .padding(vertical = 6.dp),
+        horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
     ) {
         Surface(
-            color = color,
+            color = containerColor,
+            contentColor = contentColor,
             shape = shape,
-            tonalElevation = 4.dp
+            shadowElevation = 1.dp
         ) {
             Text(
                 text = message.text,
-                modifier = Modifier.padding(12.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                 style = MaterialTheme.typography.bodyLarge
             )
         }

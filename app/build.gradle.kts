@@ -73,6 +73,12 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
+    // Security & Encryption
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
+    // Lifecycle
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:5.8.0")

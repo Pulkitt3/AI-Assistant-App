@@ -9,14 +9,18 @@ import com.example.aichat.domain.repository.ChatRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+import com.example.aichat.data.security.SecurityManager
+
 class ChatRepositoryImpl(
     private val chatDao: ChatDao,
-    private val geminiClient: GeminiClient
+    private val geminiClient: GeminiClient,
+    private val securityManager: SecurityManager
 ) : ChatRepository {
 
     private var pdfContext: String = ""
 
     override fun getChatHistory(): Flow<List<ChatMessage>> {
+        // Observes database: UI automatically updates when new data is inserted
         return chatDao.getAllMessages().map { entities ->
             entities.map { it.toDomainModel() }
         }
@@ -27,12 +31,16 @@ class ChatRepositoryImpl(
     }
 
     override suspend fun getAiResponse(prompt: String): String {
-        val finalPrompt = if (pdfContext.isNotEmpty()) {
-            "Context from uploaded PDF: $pdfContext\n\nUser Question: $prompt"
-        } else {
-            prompt
+        return try {
+            val finalPrompt = if (pdfContext.isNotEmpty()) {
+                "Context from PDF: $pdfContext\n\nQuestion: $prompt"
+            } else {
+                prompt
+            }
+            geminiClient.generateResponse(finalPrompt)
+        } catch (e: Exception) {
+            "Offline mode: Could not reach AI server. ${e.message}"
         }
-        return geminiClient.generateResponse(finalPrompt)
     }
 
     override suspend fun processPdf(text: String) {

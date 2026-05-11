@@ -24,14 +24,18 @@ import com.example.aichat.domain.usecase.GetChatHistoryUseCase
 import com.example.aichat.domain.usecase.ProcessPdfUseCase
 import com.example.aichat.domain.usecase.SendMessageUseCase
 
+import com.example.aichat.data.security.SecurityManager
+import kotlinx.coroutines.Dispatchers
+
 class MainActivity : ComponentActivity() {
 
     private lateinit var viewModel: ChatViewModel
     private lateinit var pdfParser: PdfParser
+    private lateinit var securityManager: SecurityManager
 
     private val selectPdfLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
-            lifecycleScope.launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 val text = pdfParser.extractTextFromUri(it)
                 viewModel.onPdfProcessed(text)
             }
@@ -41,13 +45,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        securityManager = SecurityManager(this)
+        
         val db = Room.databaseBuilder(
             applicationContext,
             ChatDatabase::class.java, "chat-db"
         ).build()
         
-        val geminiClient = GeminiClient(apiKey = "YOUR_GEMINI_API_KEY")
-        val repository = ChatRepositoryImpl(db.chatDao(), geminiClient)
+        val geminiClient = GeminiClient(apiKey = securityManager.getApiKey() ?: "YOUR_GEMINI_API_KEY")
+        val repository = ChatRepositoryImpl(db.chatDao(), geminiClient, securityManager)
         
         // Instantiate Use Cases
         val getChatHistoryUseCase = GetChatHistoryUseCase(repository)
